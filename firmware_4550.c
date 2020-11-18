@@ -96,7 +96,7 @@ void write_pcf_data(int data)
     _i2c_write(data);
     _i2c_stop();
 }
-main()
+void main()
 {
     //---------------------------------------------------------- PIC18F4550 Init.
     ADCON0bits.ADON = 0; // Disable Analog Module.
