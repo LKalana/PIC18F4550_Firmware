@@ -8,6 +8,20 @@
 // Solo Purpose to program PIC on this Laptop....
 // In This program.It is trying to control PCF8574.
 // This version works well on Proteus Simulation.
+/*
+ * Git Fixes:-
+ * Add void main.
+ * Break the program loop using loop_breaker (MCU execute void main repeatedly.This attempt will break the loop.).
+ * Change the Delay value to check the present of program loop and change equal operator to logical AND.
+ * Last commit doesn't work.Therefore changing the delay element will solved the loop problem temporary.
+ * Set BOR to ON_ACTIVE,BOR voltage set to 2.79v and WDT Disabled.
+ * Sudden Processor reset fixed by Disabling WDT. In earlier commits WDT missed to Disable.In this commit STACK_OVER/UNDER_FLOW Disabled.
+ * 
+ */
+// PIC18F4550 Configuration Bit Settings
+
+// 'C' source line config statements
+
 
 // PIC18F4550 Configuration Bit Settings
 
@@ -30,7 +44,7 @@
 #pragma config VREGEN = OFF     // USB Voltage Regulator Enable bit (USB voltage regulator disabled)
 
 // CONFIG2H
-#pragma config WDT = ON         // Watchdog Timer Enable bit (WDT enabled)
+#pragma config WDT = OFF         // Watchdog Timer Enable bit (WDT enabled)
 #pragma config WDTPS = 32768    // Watchdog Timer Postscale Select bits (1:32768)
 
 // CONFIG3H
@@ -40,7 +54,7 @@
 #pragma config MCLRE = OFF      // MCLR Pin Enable bit (RE3 input pin enabled; MCLR pin disabled)
 
 // CONFIG4L
-#pragma config STVREN = ON      // Stack Full/Underflow Reset Enable bit (Stack full/underflow will cause Reset)
+#pragma config STVREN = OFF     // Stack Full/Underflow Reset Enable bit (Stack full/underflow will not cause Reset)
 #pragma config LVP = ON         // Single-Supply ICSP Enable bit (Single-Supply ICSP enabled)
 #pragma config ICPRT = OFF      // Dedicated In-Circuit Debug/Programming Port (ICPORT) Enable bit (ICPORT disabled)
 #pragma config XINST = OFF      // Extended Instruction Set Enable bit (Instruction set extension and Indexed Addressing mode disabled (Legacy mode))
@@ -77,35 +91,94 @@
 
 // #pragma config statements should precede project file includes.
 // Use project enums instead of #define for ON and OFF.
-
 #include <xc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "pic18f4550.h"
-#include "xc8_i2c_header.h"// Including XC8 Custom I2C Header.
-#define _XTAL_FREQ 400000 // Define Clock.
+//#include "xc8_i2c_header.h"// Including XC8 Custom I2C Header.
+#include "XC8_SPI_Driver.h"// Including XC8 Custom SPI Header.
+#include "MAX7219Header.h"// Including XC8 Custom Max7219 Header.
+#define _XTAL_FREQ 4000000 // Define Clock.
 /*
  * 
  */
-// Function inside fucntion.
-// ------------------------------------------------------------- Custom Function to Write PCF8574 I/O.
-void write_pcf_data(int data)
-{
-    _i2c_start();
-    _i2c_write(0x40);
-    _i2c_write(data);
-    _i2c_stop();
-}
+int loop_breaker = 1;// This variable act as a lock to avoid void main looping.
 void main()
 {
+    /*
+     Note :- Even if i add loop_breaker the system still loops.By further observations,that identifies that the delay element after the matrix 
+             clear cause the blink glitch.Reducing the delay between 1 to 10 ms will solve the problem temporary.
+     */
     //---------------------------------------------------------- PIC18F4550 Init.
     ADCON0bits.ADON = 0; // Disable Analog Module.
     ADCON1 = 0x0F; // Setting GPIO to Digital.
     CMCON = 0x07; // Disable Comparators and set Digital.
     //----------------------------------------------------------- Program Loop.
-    _i2c_init(); // Initialize I2C. 
-   while(1)
-    {
-        write_pcf_data(0xAA);
-    }    
+    //_i2c_init(); // Initialize I2C. 
+    xc8_spi_init(); // Initialize SPI.
+    max7219_init(); // Initialize Max7219.
+    max7219_disp_clear();// Clear Display
+    //__delay_ms(5);// Change duration from 500 to 1000 to check about loop breaks.
+    loop_breaker = 1;// Breaking the loop.
+   // Update Program loop.
+   // Changed the equal operator to logical AND.
+   while(loop_breaker == 1)
+   {
+    /*
+    max7219_disp_sp_char();// Display Special Character.
+    __delay_ms(1000); 
+    max7219_disp_char('A');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('B');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('C');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('D');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('E');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('F');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('G');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('H');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('I');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('J');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('K');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('L');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('M');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('N');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('O');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('P');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('Q');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('R');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('S');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('T');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('U');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('V');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('W');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('X');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('Y');// Display Character.
+    __delay_ms(1000);
+    max7219_disp_char('Z');// Display Character.
+    __delay_ms(1000);
+    */
+   }
 }
