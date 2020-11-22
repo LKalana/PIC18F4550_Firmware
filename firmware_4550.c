@@ -17,12 +17,7 @@
  * Set BOR to ON_ACTIVE,BOR voltage set to 2.79v and WDT Disabled.
  * Sudden Processor reset fixed by Disabling WDT. In earlier commits WDT missed to Disable.In this commit STACK_OVER/UNDER_FLOW Disabled.
  * 
- */
-// PIC18F4550 Configuration Bit Settings
-
-// 'C' source line config statements
-
-
+*/
 // PIC18F4550 Configuration Bit Settings
 
 // 'C' source line config statements
@@ -39,12 +34,12 @@
 
 // CONFIG2L
 #pragma config PWRT = OFF       // Power-up Timer Enable bit (PWRT disabled)
-#pragma config BOR = ON         // Brown-out Reset Enable bits (Brown-out Reset enabled in hardware only (SBOREN is disabled))
+#pragma config BOR = OFF        // Brown-out Reset Enable bits (Brown-out Reset disabled in hardware and software)
 #pragma config BORV = 3         // Brown-out Reset Voltage bits (Minimum setting 2.05V)
 #pragma config VREGEN = OFF     // USB Voltage Regulator Enable bit (USB voltage regulator disabled)
 
 // CONFIG2H
-#pragma config WDT = OFF         // Watchdog Timer Enable bit (WDT enabled)
+#pragma config WDT = OFF        // Watchdog Timer Enable bit (WDT disabled (control is placed on the SWDTEN bit))
 #pragma config WDTPS = 32768    // Watchdog Timer Postscale Select bits (1:32768)
 
 // CONFIG3H
@@ -91,18 +86,21 @@
 
 // #pragma config statements should precede project file includes.
 // Use project enums instead of #define for ON and OFF.
+
 #include <xc.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "pic18f4550.h"
-//#include "xc8_i2c_header.h"// Including XC8 Custom I2C Header.
-#include "XC8_SPI_Driver.h"// Including XC8 Custom SPI Header.
-#include "MAX7219Header.h"// Including XC8 Custom Max7219 Header.
+#include "xc8_i2c_header.h"// Including XC8 Custom I2C Header.
+#include "pcf8574_header.h"// Including XC8 Custom PCF8574 Header.
+//#include "XC8_SPI_Driver.h"// Including XC8 Custom SPI Header.
+//#include "MAX7219Header.h"// Including XC8 Custom Max7219 Header.
 #define _XTAL_FREQ 4000000 // Define Clock.
 /*
  * 
  */
-int loop_breaker = 1;// This variable act as a lock to avoid void main looping.
+//int loop_breaker = 1;// This variable act as a lock to avoid void main looping.
 void main()
 {
     /*
@@ -114,71 +112,17 @@ void main()
     ADCON1 = 0x0F; // Setting GPIO to Digital.
     CMCON = 0x07; // Disable Comparators and set Digital.
     //----------------------------------------------------------- Program Loop.
-    //_i2c_init(); // Initialize I2C. 
-    xc8_spi_init(); // Initialize SPI.
-    max7219_init(); // Initialize Max7219.
-    max7219_disp_clear();// Clear Display
-    //__delay_ms(5);// Change duration from 500 to 1000 to check about loop breaks.
-    loop_breaker = 1;// Breaking the loop.
-   // Update Program loop.
-   // Changed the equal operator to logical AND.
-   while(loop_breaker == 1)
+    _i2c_init(); // Initialize I2C.
+    //xc8_spi_init(); // Initialize SPI.
+    //max7219_init(); // Initialize Max7219.
+    //max7219_disp_clear();
+    //__delay_ms(100);
+    //TRISD = 0x00;
+   while(1)
    {
-    /*
-    max7219_disp_sp_char();// Display Special Character.
-    __delay_ms(1000); 
-    max7219_disp_char('A');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('B');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('C');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('D');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('E');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('F');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('G');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('H');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('I');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('J');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('K');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('L');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('M');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('N');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('O');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('P');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('Q');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('R');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('S');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('T');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('U');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('V');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('W');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('X');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('Y');// Display Character.
-    __delay_ms(1000);
-    max7219_disp_char('Z');// Display Character.
-    __delay_ms(1000);
-    */
+      pcf8574_write_(0x04);// Call Custom Function.
+      __delay_ms(100);
+      pcf8574_write_(0x00);// Call Custom Function.
+      __delay_ms(100);
    }
 }
